@@ -484,7 +484,7 @@ func uploadOutputArtifacts(ctx context.Context, executorInput *pipelinespec.Exec
 		localDir, err := LocalPathForURI(outputArtifact.Uri)
 		if err != nil {
 			glog.Warningf("Output Artifact %q does not have a recognized storage URI %q. Skipping uploading to remote storage.", name, outputArtifact.Uri)
-		} else {
+		} else if !strings.HasPrefix(outputArtifact.Uri, "oci://") {
 			blobKey, err := opts.bucketConfig.KeyFromURI(outputArtifact.Uri)
 			if err != nil {
 				return nil, fmt.Errorf("failed to upload output artifact %q: %w", name, err)
@@ -816,7 +816,7 @@ func LocalPathForURI(uri string) (string, error) {
 		return "/s3/" + strings.TrimPrefix(uri, "s3://"), nil
 	}
 	if strings.HasPrefix(uri, "oci://") {
-		return "/oci/" + strings.ReplaceAll(strings.TrimPrefix(uri, "oci://"), "/", "\\/") + "/models", nil
+		return "/oci/" + strings.ReplaceAll(strings.TrimPrefix(uri, "oci://"), "/", "_") + "/models", nil
 	}
 	return "", fmt.Errorf("failed to generate local path for URI %s: unsupported storage scheme", uri)
 }
